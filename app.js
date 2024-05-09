@@ -87,6 +87,9 @@ const getVideo = async (videoUrl, browser, callback, errorCallback) => {
         const page = await browser.newPage();
         // const videoUrl = `https://www.tiktok.com/@ltsmikaylacampinos/video/7345297913788091690`
         await page.goto(videoUrl);
+        const currentURL = page.url();
+        console.log(currentURL)
+        return
         const videoSrc = await page.$eval('.tiktok-web-player video', el => el.src);
         const images = await page.$$eval('picture img', elements => {
             return elements.map(element => ({ src: element.src, alt: element.alt }));
@@ -131,7 +134,61 @@ const getImages = async (url , browser) => {
 }
 
 
-module.exports = { getUserData, getVideo , getImages }
+const getImages2 = async (url , browser , page) => {
+   
+    try {
+    const imgSrcs = await page.evaluate(() => {
+        const swipeDiv = document.querySelector('.swiper-wrapper');
+        const imageDivs = swipeDiv.querySelectorAll('div img');
+        return Array.from(imageDivs).map(img => img.src);
+    })
+    // const title = await page.$eval('.css-1wdx3tj-DivContainer span ', el => el.textContent) || await page.$eval('.css-199fttw-H1PhotoTitle', el => el.textContent) || 'hi'
+    const metaContent = await page.$eval('meta[property="og:description"]', element => element.content);
+
+    const numberOfImages = imgSrcs.length / 3
+    const images = []
+    for (let index = 0; index < numberOfImages; index++) {
+        images.push(imgSrcs[index])
+    }
+    page.close()
+    return {images , title : metaContent }   
+    } catch (error) {
+        console.log(error.message)
+        throw 'error'
+    }
+}
+
+
+
+const getVideo2 = async (videoUrl, browser, page ,  callback, errorCallback) => {
+    try {
+        //   const browser = await puppeteer.launch({
+        //     headless: false,
+        //     args: ['--lang=en-US']
+        // });
+        // const page = await browser.newPage();
+        // // const videoUrl = `https://www.tiktok.com/@ltsmikaylacampinos/video/7345297913788091690`
+        // await page.goto(videoUrl);
+        // const currentURL = page.url();
+        // console.log(currentURL)
+        // return
+        const videoSrc = await page.$eval('.tiktok-web-player video', el => el.src);
+        const images = await page.$$eval('picture img', elements => {
+            return elements.map(element => ({ src: element.src, alt: element.alt }));
+        });
+        var viewSource = await page.goto(videoSrc, { waitUntil: 'networkidle2' });
+        const cookies = await page.cookies();
+        const cookieHeader = formatCookiesForAxios(cookies);
+        const videoId = Dummy.uniqueId(12)
+        download_file(videoSrc, cookieHeader, videoId, () => callback(videoId, images[1]))
+        page.close()
+    } catch (error) {
+        console.log('here')
+        errorCallback()
+    }
+}
+
+module.exports = { getUserData, getVideo , getImages , getVideo2 , getImages2}
 
 
 
