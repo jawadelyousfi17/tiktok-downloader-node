@@ -17,7 +17,7 @@ app.use('/video', express.static(path.join(__dirname, 'video')));
 
 
 app.use(cors({
-  origin: 'http://localhost:5173'
+  origin: '*'
 })); // This will enable CORS for all routes and all origins
 
 const videoData = {}
