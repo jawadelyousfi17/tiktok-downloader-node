@@ -3,11 +3,13 @@ const puppeteer = require('puppeteer-extra');
 const path = require('path');
 const cors = require('cors');
 
+require('dotenv').config()
+
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
 
 const app = express();
-const port = 3000; // You can change the port if needed
+const port = process.env.PORT || 3000; // You can change the port if needed
 
 // Middleware to parse incoming JSON data
 app.use(express.json())
@@ -20,7 +22,7 @@ app.use(cors({
 
 const videoData = {}
 
-const { getUserData, getVideo , getImages } = require('./app')
+const { getUserData, getVideo, getImages, getVideo2, getImages2 } = require('./app')
 
 let browser, page;
 (async () => {
@@ -49,29 +51,74 @@ app.post('/video', async (req, res) => {
   const photoRegex = /\/photo\/(\d+)/;
   const hashtagRegex = /#\p{L}+/gu; // Matches #word combinations
   const match = url.match(regex);
-  if (match) {
+  if (true) {
     getVideo(url, browser,
-       (path , images) => {
+      (path, images) => {
         videoData[path] = images.alt.replace(hashtagRegex, '')
         console.log(videoData)
-       res.json({ succes: true, type : 'video' ,  path: path , images }) },
-     () => { res.json({ succes: false , type : 'server' }) 
-    })
+        res.json({ succes: true, type: 'video', path: path, images })
+      },
+      () => {
+        res.json({ succes: false, type: 'server' })
+      })
   }
-  if(url.match(photoRegex)) {
-    getImages(url , browser)
-    .then((data) => {
-      res.json({succes : true , type : 'images' , data })
-    })
-    .catch(err => {
-      console.log(err.message)
-      res.json({succes : false , type : 'server'  })
-    })
+  if (url.match(photoRegex)) {
+    getImages(url, browser)
+      .then((data) => {
+        res.json({ succes: true, type: 'images', data })
+      })
+      .catch(err => {
+        console.log(err.message)
+        res.json({ succes: false, type: 'server' })
+      })
   }
   if(!url.match(photoRegex) && !match) {
     res.json({succes : false , type : 'link' })
   }
 });
+
+app.post('/beta', async (req, res) => {
+  const { url } = req.body;
+
+  const page = await browser.newPage();
+  // const videoUrl = `https://www.tiktok.com/@ltsmikaylacampinos/video/7345297913788091690`
+  await page.goto(url , { waitUntil: 'networkidle2' });
+  const currentURL = page.url();
+  const regex = /\/video\/(\d+)/;
+  const photoRegex = /\/photo\/(\d+)/;
+  const hashtagRegex = /#\p{L}+/gu; // Matches #word combinations
+  const match = currentURL.match(regex);
+
+
+  if(match) {
+    console.log('video')
+    getVideo2(url, browser, page ,
+      (path, images) => {
+        videoData[path] = images.alt.replace(hashtagRegex, '')
+        res.json({ succes: true, type: 'video', path: path, images })
+      },
+      () => {
+        res.json({ succes: false, type: 'server' })
+      })
+  }
+  if (currentURL.match(photoRegex)) {
+    console.log('image')
+    getImages2(url, browser , page)
+      .then((data) => {
+        res.json({ succes: true, type: 'images', data })
+      })
+      .catch(err => {
+        console.log(err.message)
+        res.json({ succes: false, type: 'server' })
+      })
+  }
+ 
+  if(!match && !currentURL.match(photoRegex)) {
+    res.json({succes : false , type : 'link' })
+  }
+
+})
+
 
 app.get('/download/:id', (req, res) => {
   const id = req.params.id
