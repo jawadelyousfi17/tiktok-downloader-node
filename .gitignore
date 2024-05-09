@@ -1,0 +1,14 @@
+# Dependencies
+/node_modules
+
+# Optional: ignore environment files
+.env
+.env.local
+
+# Optional: ignore logs
+*.log
+npm-debug.log*
+
+# Optional: ignore OS generated files
+.DS_Store    # for macOS
+Thumbs.db    # for Windows

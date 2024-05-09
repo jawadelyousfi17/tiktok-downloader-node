@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit URL</title>
+</head>
+<body>
+    <h1>URL Submission Form</h1>
+    <form id="urlForm">
+        <input type="text" id="urlInput" placeholder="Enter URL" required>
+        <button type="submit">Submit</button>
+    </form>
+    <p id="responseMessage"></p>
+
+    <script>document.getElementById('urlForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the form from submitting the traditional way
+    
+        const url = document.getElementById('urlInput').value;
+        fetch('http://localhost:3000/video', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: url }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('responseMessage').textContent = 'Error submitting URL';
+        });
+    });
+    </script>
+</body>
+</html>

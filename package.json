@@ -1,0 +1,23 @@
+{
+  "name": "webscrap",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "extra": "^0.2.1",
+    "pupeteer": "^0.0.1",
+    "puppeteer": "^22.8.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "xdummy-js": "^1.0.1"
+  }
+}
