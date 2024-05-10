@@ -5,10 +5,7 @@ const cors = require('cors');
 const fs = require('fs');
 const https = require('https');
 
-const sslOptions = {
-  key: fs.readFileSync(path.join(__dirname, 'ssl', 'ymv.txt')),
-  cert: fs.readFileSync(path.join(__dirname, 'ssl', 'tmv.crt'))
-};
+
 
 require('dotenv').config()
 
@@ -16,7 +13,7 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
 
 const app = express();
-const port = process.env.PORT || 3000; // You can change the port if needed
+const PORT = process.env.PORT || 8080; // You can change the port if needed
 
 // Middleware to parse incoming JSON data
 app.use(express.json())
@@ -24,7 +21,7 @@ app.use('/video', express.static(path.join(__dirname, 'video')));
 
 
 app.use(cors({
-  origin: 'http://localhost:5173'
+  origin: '*'
 })); // This will enable CORS for all routes and all origins
 
 const videoData = {}
@@ -34,7 +31,7 @@ const { getUserData, getVideo, getImages, getVideo2, getImages2, getUserInfo } =
 let browser, page;
 (async () => {
   browser = await puppeteer.launch({
-    headless: false
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
 })()
 
@@ -164,6 +161,11 @@ app.post('/user', async (req, res) => {
 //   console.log('HTTPS server running on port 3000');
 // });
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+const sslOptions = {
+    key: fs.readFileSync(path.join(__dirname, 'ssl' ,'ymv.txt' )),
+    cert: fs.readFileSync(path.join(__dirname, 'ssl' , 'tmv.crt'))
+};
+// Create an HTTPS service identical to the HTTP service.
+https.createServer(sslOptions, app).listen(PORT, () => {
+    console.log('HTTPS server running on port',PORT);
 });
